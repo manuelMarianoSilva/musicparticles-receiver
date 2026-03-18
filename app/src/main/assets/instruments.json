@@ -1,0 +1,8 @@
+{
+  "assignments": [
+    { "deviceId": "REPLACE-WITH-SENDER-1-UUID", "instrument": "guitar" },
+    { "deviceId": "REPLACE-WITH-SENDER-2-UUID", "instrument": "bass"   },
+    { "deviceId": "64be2bc6-e0cb-47d9-a355-2b82871530ae", "instrument": "drums"  }
+  ],
+  "default": "guitar"
+}
