@@ -28,27 +28,52 @@ git clone https://github.com/yourname/particle-receiver.git
 ```
 Open in Android Studio (Ladybug or later recommended).
 
-### 2. Add audio samples
-Place your `.ogg` or `.wav` sample files in `app/src/main/res/raw/`. The app expects these exact filenames:
+### 2. Audio samples
+At this moment these are the existing audio samples in the app:
 
 **Guitar**
 ```
 guitar_e2.ogg  guitar_a2.ogg  guitar_d3.ogg  guitar_g3.ogg
 guitar_b3.ogg  guitar_e4.ogg  guitar_a4.ogg  guitar_d5.ogg
 ```
-
 **Bass**
 ```
 bass_e1.ogg  bass_a1.ogg  bass_d2.ogg  bass_g2.ogg
 ```
-
 **Drums**
 ```
 drum_kick.ogg      drum_snare.ogg     drum_hihat_closed.ogg  drum_hihat_open.ogg
 drum_crash.ogg     drum_ride.ogg      drum_tom_hi.ogg        drum_tom_lo.ogg
 ```
 
-Free CC0 samples can be found at [freesound.org](https://freesound.org) or the [Versilian Community Sample Library](https://github.com/sgossner/VCSL).
+Feel free to add more of your own — place your `.ogg` or `.wav` files in `app/src/main/res/raw/`. Free CC0 samples can be found at [freesound.org](https://freesound.org) or the [Versilian Community Sample Library](https://github.com/sgossner/VCSL).
+
+When adding a new sample, update these four places:
+
+**1. `SoundEngine.kt`** — add it to the preload list in the `init` block:
+```kotlin
+init {
+    listOf(
+        // existing samples...
+        R.raw.your_new_sample   // ← add here
+    ).forEach { resId -> soundIds[resId] = pool.load(context, resId, 1) }
+}
+```
+
+**2. The instrument file** — add it to the note mapping for whichever instrument it belongs to:
+
+- `GuitarInstrument.kt` → add to the `samples` list and update `resolveFromGrid()`
+- `BassInstrument.kt` → add to the `samples` list and update `resolveFromGrid()`
+- `DrumInstrument.kt` → add to the `zoneFor()` mapping
+
+**3. `NoteGridView.kt` (receiver)** — update the grid label arrays to show the new note in the overlay:
+- Guitar → `ONESHOT_GRID`
+- Bass → `BASS_GRID`
+- Drums → `drawDrumGrid()`
+
+**4. `NoteGridView.kt` (sender)** — same change as above so the sender grid stays in sync with the receiver.
+
+Please notice that this won't update the grid when turned on, that might need a little extra work.
 
 ### 3. Configure instruments
 Open `app/src/main/assets/instruments.json` and assign each sender device to an instrument:
