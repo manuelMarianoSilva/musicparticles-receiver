@@ -23,11 +23,11 @@ class ReceiverActivity : AppCompatActivity() {
     private lateinit var soundEngine: SoundEngine
     private lateinit var instrumentRouter: InstrumentRouter
     private lateinit var statusText: TextView
+    private lateinit var noteGridView: NoteGridView
     private val hudHandler = Handler(Looper.getMainLooper())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        android.util.Log.d("ReceiverActivity", "onCreate called")
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         @Suppress("DEPRECATION")
         window.decorView.systemUiVisibility = (
@@ -43,7 +43,9 @@ class ReceiverActivity : AppCompatActivity() {
         val localIp = getLocalIpAddress() ?: "0.0.0.0"
         android.util.Log.d("ReceiverActivity", "Local IP: $localIp")
 
-        udpReceiver = UdpReceiver(port = 9876).also { it.start() }
+        udpReceiver      = UdpReceiver(port = 9876).also { it.start() }
+        soundEngine      = SoundEngine(this)
+        instrumentRouter = InstrumentRouter(this, soundEngine)
 
         discoveryServer = DiscoveryServer(
             onSenderFound = { ip ->
@@ -57,12 +59,61 @@ class ReceiverActivity : AppCompatActivity() {
         )
         discoveryServer.start(localIp)
 
-        soundEngine      = SoundEngine(this)
-        instrumentRouter = InstrumentRouter(this, soundEngine)
-        surfaceView      = ReceiverSurfaceView(this, udpReceiver, instrumentRouter, sw, sh)
+        noteGridView = NoteGridView(this)
+
+        // Wire one-shot note trigger to grid highlight
+        instrumentRouter.onOneShotNoteTriggered = { normX, normY ->
+            runOnUiThread {
+                noteGridView.chromaticMode = false
+                noteGridView.highlightOneShotCell(normX, normY)
+            }
+        }
+
+        surfaceView = ReceiverSurfaceView(
+            context         = this,
+            udpReceiver     = udpReceiver,
+            router          = instrumentRouter,
+            screenW         = sw,
+            screenH         = sh,
+            onNoteTriggered = { normX, normY, deviceId ->
+                val gridType = instrumentRouter.gridTypeFor(deviceId)
+                if (gridType != InstrumentRouter.GridType.NONE) {
+                    runOnUiThread {
+                        when (gridType) {
+                            InstrumentRouter.GridType.CHROMATIC -> {
+                                noteGridView.chromaticMode = true
+                                noteGridView.bassMode      = false
+                                noteGridView.drumMode      = false
+                                noteGridView.highlightCell(normX, normY)
+                            }
+                            InstrumentRouter.GridType.GUITAR_ONESHOT -> {
+                                noteGridView.chromaticMode = false
+                                noteGridView.bassMode      = false
+                                noteGridView.drumMode      = false
+                                noteGridView.highlightOneShotCell(normX, normY)
+                            }
+                            InstrumentRouter.GridType.BASS_ONESHOT -> {
+                                noteGridView.chromaticMode = false
+                                noteGridView.bassMode      = true
+                                noteGridView.drumMode      = false
+                                noteGridView.highlightBassCell(normX, normY)
+                            }
+                            InstrumentRouter.GridType.DRUM -> {
+                                noteGridView.chromaticMode = false
+                                noteGridView.bassMode      = false
+                                noteGridView.drumMode      = true
+                                noteGridView.highlightDrumCell(normX, normY)
+                            }
+                            InstrumentRouter.GridType.NONE -> { }
+                        }
+                    }
+                }
+            }
+        )
 
         val root = FrameLayout(this).apply {
             addView(surfaceView)
+            addView(noteGridView)
             statusText = TextView(context).apply {
                 setTextColor(android.graphics.Color.argb(200, 255, 255, 255))
                 textSize  = 11f
@@ -73,6 +124,7 @@ class ReceiverActivity : AppCompatActivity() {
         }
         setContentView(root)
 
+        noteGridView.visibility = View.GONE
         root.setOnClickListener { toggleHud() }
         startHudUpdates()
     }
@@ -88,9 +140,17 @@ class ReceiverActivity : AppCompatActivity() {
         hudHandler.post(object : Runnable {
             override fun run() {
                 if (hudVisible) updateHud()
+                updateGridVisibility()
                 hudHandler.postDelayed(this, 1000)
             }
         })
+    }
+
+    private fun updateGridVisibility() {
+        val anyGridDevice = udpReceiver.devices.keys.any {
+            instrumentRouter.gridTypeFor(it) != InstrumentRouter.GridType.NONE
+        }
+        noteGridView.visibility = if (anyGridDevice) View.VISIBLE else View.GONE
     }
 
     private fun updateHud() {
@@ -136,6 +196,7 @@ class ReceiverActivity : AppCompatActivity() {
         surfaceView.release()
         discoveryServer.stop()
         udpReceiver.stop()
+        instrumentRouter.releaseAll()
         soundEngine.release()
     }
 }

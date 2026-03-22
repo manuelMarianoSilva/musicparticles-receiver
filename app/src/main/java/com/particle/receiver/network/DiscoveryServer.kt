@@ -26,11 +26,13 @@ class DiscoveryServer(
     private val SENDER_TIMEOUT     = 3000L
 
     fun start(localIp: String) {
-        socket = DatagramSocket(discoveryPort).apply {
-            broadcast = true
+        val multicastGroup = InetAddress.getByName("239.255.0.1")
+        val multicastSocket = java.net.MulticastSocket(discoveryPort).apply {
+            joinGroup(multicastGroup)
             reuseAddress = true
         }
-        android.util.Log.d("DiscoveryServer", "Listening on port $discoveryPort")
+        socket = multicastSocket
+        android.util.Log.d("DiscoveryServer", "Joined multicast group 239.255.0.1 on port $discoveryPort")
 
         // Listen for DISCOVER and HEARTBEAT packets
         scope.launch {
