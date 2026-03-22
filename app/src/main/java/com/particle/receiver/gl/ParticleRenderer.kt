@@ -42,8 +42,8 @@ class ParticleRenderer(private val ps: ParticleSystem) : GLSurfaceView.Renderer 
     private val mvp = FloatArray(16)
 
     private val STRIDE   = 7
-    private val MAX_PART = 12_000
-    private val vData    = FloatArray(MAX_PART * STRIDE)
+    private val MAX_PART = 40_000
+    private val vData    = FloatArray(40_000 * STRIDE)
     private lateinit var vBuf: FloatBuffer
 
     private var lastMs = System.currentTimeMillis()
@@ -63,7 +63,7 @@ class ParticleRenderer(private val ps: ParticleSystem) : GLSurfaceView.Renderer 
         GLES20.glGenBuffers(1, ids, 0)
         vboId = ids[0]
 
-        vBuf = ByteBuffer.allocateDirect(MAX_PART * STRIDE * 4)
+        vBuf = ByteBuffer.allocateDirect(40_000 * STRIDE * 4)
             .order(ByteOrder.nativeOrder()).asFloatBuffer()
     }
 

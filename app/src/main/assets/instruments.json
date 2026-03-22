@@ -1,8 +1,8 @@
 {
   "assignments": [
-    { "deviceId": "REPLACE-WITH-SENDER-1-UUID", "instrument": "guitar" },
-    { "deviceId": "REPLACE-WITH-SENDER-2-UUID", "instrument": "bass"   },
-    { "deviceId": "64be2bc6-e0cb-47d9-a355-2b82871530ae", "instrument": "drums"  }
+    { "deviceId": "64be2bc6-e0cb-47d9-a355-2b82871530ae", "instrument": "sync", "continuous": false, "showGrid": true },
+    { "deviceId": "64be2bc6-e0cb-47d9-a355-2b82871530ae-remove-to-enable", "instrument": "bass", "continuous": false, "showGrid": true },
+    { "deviceId": "64be2bc6-e0cb-47d9-a355-2b82871530ae-remove-to-enable", "instrument": "drums", "continuous": false, "showGrid": true }
   ],
   "default": "guitar"
 }

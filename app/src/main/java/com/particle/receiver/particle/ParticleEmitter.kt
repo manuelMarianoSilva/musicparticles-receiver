@@ -14,7 +14,7 @@ class ParticleEmitter(private val system: ParticleSystem) {
             val angle = rng.nextFloat() * 2f * PI.toFloat()
             val speed = rng.nextFloat() * 0.4f + 0.1f
             system.spawn(x, y, cos(angle) * speed, sin(angle) * speed,
-                rng.nextFloat() * 10f + 4f,
+                rng.nextFloat() * 20f + 10f,
                 (hue + rng.nextFloat() * 40f) % 360f,
                 rng.nextFloat() * 3f + 2f)
         }
@@ -31,7 +31,7 @@ class ParticleEmitter(private val system: ParticleSystem) {
                 y + rng.nextFloat() * 6f - 3f,
                 vx * 0.3f + (rng.nextFloat() - 0.5f) * spread,
                 vy * 0.3f + (rng.nextFloat() - 0.5f) * spread,
-                rng.nextFloat() * 7f + 2f,
+                rng.nextFloat() * 14f + 6f,
                 (hue + rng.nextFloat() * 60f) % 360f,
                 rng.nextFloat() * 2f + 1f)
         }
@@ -47,7 +47,7 @@ class ParticleEmitter(private val system: ParticleSystem) {
             system.spawn(x, y,
                 cos(angle) * rng.nextFloat() * maxSpeed,
                 sin(angle) * rng.nextFloat() * maxSpeed,
-                rng.nextFloat() * (8f + holdFactor * 16f) + 3f,
+                rng.nextFloat() * (16f + holdFactor * 32f) + 8f,
                 (hue + rng.nextFloat() * 80f) % 360f,
                 rng.nextFloat() * 4f + 2f)
         }
@@ -61,7 +61,7 @@ class ParticleEmitter(private val system: ParticleSystem) {
             system.spawn(x, y,
                 cos(angle) * (rng.nextFloat() * 0.5f + 0.05f),
                 sin(angle) * (rng.nextFloat() * 0.5f + 0.05f) - 0.3f,
-                rng.nextFloat() * 8f + 2f,
+                rng.nextFloat() * 16f + 6f,
                 (baseHue + rng.nextFloat() * 60f) % 360f,
                 rng.nextFloat() * 3f + 1.5f)
         }

@@ -1,34 +1,3 @@
-//package com.particle.receiver.audio
-//
-//import android.content.Context
-//import android.media.AudioAttributes
-//import android.media.SoundPool
-//
-//class SoundEngine(context: Context) {
-//
-//    private val pool: SoundPool = SoundPool.Builder()
-//        .setMaxStreams(16)
-//        .setAudioAttributes(
-//            AudioAttributes.Builder()
-//                .setUsage(AudioAttributes.USAGE_GAME)
-//                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-//                .build()
-//        ).build()
-//
-//    private val soundIds = mutableMapOf<Int, Int>()
-//
-//    fun load(context: Context, resId: Int) {
-//        soundIds[resId] = pool.load(context, resId, 1)
-//    }
-//
-//    fun play(resId: Int, volume: Float, pitch: Float = 1.0f) {
-//        val sid = soundIds[resId] ?: return
-//        pool.play(sid, volume, volume, 1, 0, pitch.coerceIn(0.5f, 2.0f))
-//    }
-//
-//    fun release() = pool.release()
-//}
-
 package com.particle.receiver.audio
 
 import android.content.Context
@@ -39,7 +8,7 @@ import com.particle.receiver.R
 class SoundEngine(context: Context) {
 
     private val pool: SoundPool = SoundPool.Builder()
-        .setMaxStreams(16)
+        .setMaxStreams(32)
         .setAudioAttributes(
             AudioAttributes.Builder()
                 .setUsage(AudioAttributes.USAGE_GAME)
@@ -60,12 +29,34 @@ class SoundEngine(context: Context) {
         ).forEach { resId -> soundIds[resId] = pool.load(context, resId, 1) }
     }
 
-    fun play(resId: Int, volume: Float, pitch: Float = 1.0f) {
-        val sid = soundIds[resId] ?: run {
-            android.util.Log.w("SoundEngine", "Sample not loaded for resId $resId")
-            return
-        }
-        pool.play(sid, volume, volume, 1, 0, pitch.coerceIn(0.5f, 2.0f))
+    /** One-shot play — returns streamId */
+    fun play(resId: Int, volume: Float, pitch: Float = 1.0f): Int {
+        val sid = soundIds[resId] ?: return -1
+        return pool.play(sid, volume, volume, 1, 0, pitch.coerceIn(0.5f, 2.0f))
+    }
+
+    /** Looping play — caller must call stopStream() when done */
+    fun playLooping(resId: Int, volume: Float, pitch: Float = 1.0f): Int {
+        val sid = soundIds[resId] ?: return -1
+        return pool.play(sid, volume, volume, 1, -1, pitch.coerceIn(0.5f, 2.0f))
+    }
+
+    /** Update pitch of a playing stream in real time */
+    fun setPitch(streamId: Int, pitch: Float) {
+        if (streamId <= 0) return
+        pool.setRate(streamId, pitch.coerceIn(0.5f, 2.0f))
+    }
+
+    /** Update volume of a playing stream in real time */
+    fun setVolume(streamId: Int, volume: Float) {
+        if (streamId <= 0) return
+        pool.setVolume(streamId, volume, volume)
+    }
+
+    /** Stop a looping stream */
+    fun stopStream(streamId: Int) {
+        if (streamId <= 0) return
+        pool.stop(streamId)
     }
 
     fun release() = pool.release()

@@ -49,6 +49,7 @@ class UdpReceiver(private val port: Int = 9876) {
                     if (json.contains("HEARTBEAT")) continue
 
                     val event = TouchEventSerializer.fromJson(json)
+                    android.util.Log.d("UdpReceiver", "Received event type=${event.type} pointer=${event.pointerId}")
                     events.trySend(event)
 
                     val stats = devices.getOrPut(event.deviceId) { DeviceStats() }
