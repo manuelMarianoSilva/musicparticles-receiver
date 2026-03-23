@@ -1,3 +1,5 @@
+Check the repo for the [Emitter App](https://github.com/manuelMarianoSilva/musicparticles-emitter) in order to get the full experience
+
 # ✦ ParticleReceiver — The Stage
 
 > *It listens. It glows. It plays.*
